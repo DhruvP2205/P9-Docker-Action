@@ -1,0 +1,23 @@
+name: "Docker Action"
+description: "Docker Action that check whether image is pinned or not and flag it."
+
+inputs:
+  dockerfile:
+    description: "Path to the Dockerfile, relative to the repo"
+    required: true
+  fail_on_unpinned:
+    description: "Fail the step if any base image is unpinned"
+    default: "true"
+
+outputs:
+  unpinned_count:
+    description: "Number of unpinned base images"
+  report:
+    description: "One line per problem, e.g. line 1: python has no tag"
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.dockerfile }}
+    - ${{ inputs.fail_on_unpinned }}

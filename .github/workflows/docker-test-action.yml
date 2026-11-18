@@ -1,0 +1,141 @@
+name: "Test Docker Custom Action"
+
+on:
+    push:
+    workflow_dispatch:
+
+jobs:
+    test-docker-action:
+        name: ${{ matrix.name }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - name: "good"
+                      dockerPath: "fixtures/good.Dockerfile"
+                      fail-on-unpinned: "true"
+                      expected-outcome: "success"
+                      expected-count: "0"
+                    - name: "no tag"
+                      dockerPath: "fixtures/no-tag.Dockerfile"
+                      fail-on-unpinned: "true"
+                      expected-outcome: "failure"
+                      expected-count: "1"
+                    - name: "latest"
+                      dockerPath: "fixtures/latest.Dockerfile"
+                      fail-on-unpinned: "true"
+                      expected-outcome: "failure"
+                      expected-count: "1"
+                    - name: "multistage"
+                      dockerPath: "fixtures/multistage.Dockerfile"
+                      fail-on-unpinned: "true"
+                      expected-outcome: "success"
+                      expected-count: "0"
+                    - name: "mixed"
+                      dockerPath: "fixtures/mixed.Dockerfile"
+                      fail-on-unpinned: "true"
+                      expected-outcome: "failure"
+                      expected-count: "2"
+                    - name: "digest"
+                      dockerPath: "fixtures/digest.Dockerfile"
+                      fail-on-unpinned: "true"
+                      expected-outcome: "success"
+                      expected-count: "0"
+                    - name: "lowercase"
+                      dockerPath: "fixtures/lowercase.Dockerfile"
+                      fail-on-unpinned: "true"
+                      expected-outcome: "failure"
+                      expected-count: "1"
+                    - name: "comment"
+                      dockerPath: "fixtures/comment.Dockerfile"
+                      fail-on-unpinned: "true"
+                      expected-outcome: "success"
+                      expected-count: "0"
+                    - name: "indented"
+                      dockerPath: "fixtures/indented.Dockerfile"
+                      fail-on-unpinned: "true"
+                      expected-outcome: "failure"
+                      expected-count: "1"
+                    - name: "crlf"
+                      dockerPath: "fixtures/crlf.Dockerfile"
+                      fail-on-unpinned: "true"
+                      expected-outcome: "failure"
+                      expected-count: "1"
+                    - name: "arg tag"
+                      dockerPath: "fixtures/arg-tag.Dockerfile"
+                      fail-on-unpinned: "true"
+                      expected-outcome: "success"
+                      expected-count: "0"
+                    - name: "arg image"
+                      dockerPath: "fixtures/arg-image.Dockerfile"
+                      fail-on-unpinned: "true"
+                      expected-outcome: "success"
+                      expected-count: "0"
+                    - name: "empty"
+                      dockerPath: "fixtures/empty.Dockerfile"
+                      fail-on-unpinned: "true"
+                      expected-outcome: "success"
+                      expected-count: "0"
+                    - name: "no tag, fail off"
+                      dockerPath: "fixtures/no-tag.Dockerfile"
+                      fail-on-unpinned: "false"
+                      expected-outcome: "success"
+                      expected-count: "1"
+                    - name: "latest, fail off"
+                      dockerPath: "fixtures/latest.Dockerfile"
+                      fail-on-unpinned: "false"
+                      expected-outcome: "success"
+                      expected-count: "1"
+                    - name: "mixed, fail off"
+                      dockerPath: "fixtures/mixed.Dockerfile"
+                      fail-on-unpinned: "false"
+                      expected-outcome: "success"
+                      expected-count: "2"
+                    - name: "indented, fail off"
+                      dockerPath: "fixtures/indented.Dockerfile"
+                      fail-on-unpinned: "false"
+                      expected-outcome: "success"
+                      expected-count: "1"
+        runs-on: ubuntu-24.04
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v7
+
+            - name: Run the Docker test
+              id: docker-action-test
+              continue-on-error: true
+              uses: ./
+              with:
+                dockerfile: ${{ matrix.dockerPath }}
+                fail_on_unpinned: ${{ matrix.fail-on-unpinned }}
+
+            - name: Get Output
+              env:
+                name: ${{ matrix.name }}
+                expected_outcome: ${{ matrix.expected-outcome }}
+                expected_count: ${{ matrix.expected-count }}
+                actual_count: ${{ steps.docker-action-test.outputs.unpinned_count }}
+                actual_report: ${{ steps.docker-action-test.outputs.report }}
+                ACTUAL_OUTCOME: ${{ steps.docker-action-test.outcome }}
+              run: |
+                failed=0
+
+                if [ "$expected_outcome" != "$ACTUAL_OUTCOME" ]; then
+                    echo "outcome differs: expected '$expected_outcome', got '$ACTUAL_OUTCOME'"
+                    failed=1
+                fi
+
+                if [ "$expected_count" != "$actual_count" ]; then
+                    echo "outcome differs: expected '$expected_count', got '$actual_count'"
+                    failed=1
+                fi
+
+                echo "----> REPORT <----"
+                echo "$actual_report"
+
+                if [ $failed -eq 1 ]; then
+                    echo "$name : FAILED"
+                    exit 1
+                else
+                    echo "$name : PASSED"
+                fi
