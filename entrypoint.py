@@ -55,7 +55,7 @@ try:
     if github_output:
         delimiter = f"EOF_{uuid.uuid4().hex}"
         with open(github_output, "a", encoding="utf-8") as f:
-            f.write(f"unpinned-count={len(unpinned_images)}\n")
+            f.write(f"unpinned_count={len(unpinned_images)}\n")
             f.write(f"report<<{delimiter}\n")
             f.write("\n".join(report_lines) + "\n")
             f.write(f"{delimiter}\n")
