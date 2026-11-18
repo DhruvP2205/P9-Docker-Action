@@ -69,8 +69,8 @@ jobs:
                     - name: "arg image"
                       dockerPath: "fixtures/arg-image.Dockerfile"
                       fail-on-unpinned: "true"
-                      expected-outcome: "success"
-                      expected-count: "0"
+                      expected-outcome: "failure"
+                      expected-count: "1"
                     - name: "empty"
                       dockerPath: "fixtures/empty.Dockerfile"
                       fail-on-unpinned: "true"
@@ -121,12 +121,12 @@ jobs:
                 failed=0
 
                 if [ "$expected_outcome" != "$ACTUAL_OUTCOME" ]; then
-                    echo "outcome differs: expected '$expected_outcome', got '$ACTUAL_OUTCOME'"
+                    echo "Outcome differs: expected '$expected_outcome', got '$ACTUAL_OUTCOME'"
                     failed=1
                 fi
 
                 if [ "$expected_count" != "$actual_count" ]; then
-                    echo "outcome differs: expected '$expected_count', got '$actual_count'"
+                    echo "Count differs: expected '$expected_count', got '$actual_count'"
                     failed=1
                 fi
 
