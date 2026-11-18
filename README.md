@@ -129,7 +129,7 @@ The Docker action's cost is the build on every run. Pushing a prebuilt image to 
 
 ## What I didn't do
 
-- Prebuilt image in GHCR (the build runs on every use).
+- Prebuilt image in GHCR (the build runs on every use)
 - Handling a missing second argument when `entrypoint.py` is run by hand (via the action it always has the default).
 - Treating an unknown `fail_on_unpinned` value (for example `ture`) as an error. It silently means "don't fail".
 - Distinct messages per reason (no tag vs `latest` vs variable).
